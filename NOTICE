@@ -1,14 +1,19 @@
-图标
-====
+# 素材来源与许可
 
-`icon.svg` 为本仓库原创，按插件规范的线条风格手写，未用图片模型生成。从模板新建的插件换成自己的图标时，这里按实际情况重写。
+## 图标（icon.svg）
 
-许可证
-------
+来自上游项目 [Razzia](https://github.com/Ralex91/Razzia)（`packages/web/public/icon.svg`，v4.0.2）：
+“R”标志原样取用，等比放大放在白色底上，填充上游自己的品牌色 `#FF9900`（其 `packages/web/src/assets/logo.svg` 所用色）。
+未修改标志的形状。
 
+Razzia 名称和标志是 Razzia 项目（Ralex）的商标；本插件与上游无隶属关系，也未获其背书。
+
+Razzia 以 MIT 许可证发布：
+
+```
 MIT License
 
-Copyright (c) 2026 Wonton plugin authors
+Copyright (c) 2024 Ralex
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,3 +32,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## 其余素材
+
+`tabs/play.svg`、`tabs/play-fill.svg` 为本仓库原创，按本仓库的 MIT 许可证分发（见 LICENSE）。
+
+## 预置题库
+
+`quizzes/` 里的两套中文题为本插件原创内容，随本仓库同许可分发。

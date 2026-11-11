@@ -1,43 +1,32 @@
-# 云吞插件模板
+# 抢答游戏（Razzia）
 
-开发流程见[插件开发指南](https://github.com/wontonapp/wonton-docs/blob/main/develop.md)。
+像 Kahoot 的家庭抢答游戏：一人出题当主持，大家用手机加入房间，看谁答得又快又对。上游是开源项目
+[Razzia](https://github.com/Ralex91/Razzia)（MIT），本插件用上游官方镜像，不改上游。
 
-这是一个能安装的示例插件 `app.example.hello`：使用 nginx 官方镜像显示问候页，经网关的 `sso: proxy` 注入用户名，页面显示“你好，<用户名>”。示例没有应用账号、持久化数据或 MCP 工具。
+## 怎么玩
 
-## 示例文件
+1. 主持：打开插件网页，输入主持口令（在 App 的插件详情页里点开“主持口令”查看），选题开局。
+   屏幕上会给出 6 位房间码和二维码。
+2. 玩家：在云吞 App 里打开这个插件，输入房间码和昵称加入。每题限时抢答，答得越快分越高，
+   结束有排行榜和领奖台。
+3. 自带两套中文题（家庭常识赛、成语大会）；主持界面里也能自己出题、给题目配图片和音视频。
 
-| 路径 | 内容 |
-| --- | --- |
-| `docker-compose.yml` | 示例清单、nginx 服务和三个 `configs` |
-| `web/default.conf.template` | nginx 配置，启用 SSI 回显用户名并提供健康检查入口；只放行来自核心地址（`${WONTON_CORE_ADDRESS}`）的请求，其余来源 403 |
-| `web/index.html` | 问候页 |
-| `web/tokens.css` | 页面主题变量的后备值 |
-| `tabs/` | 示例主页的应用页面图标 |
-| `screenshots/home.png` | 商店详情页的示例截图 |
-| `scripts/smoke-probes.sh` | 检查真实页面和网关注入身份的插件探针 |
+游戏界面跟随手机系统语言，上游还没有中文界面（英、日、德、法、意、西、波兰、土耳其、越南语），
+中文系统显示英文；题目内容不受影响。
 
-从模板创建自己的插件后，替换示例清单、网页和素材；具体步骤见[写插件](https://github.com/wontonapp/wonton-docs/blob/main/develop.md#写插件)。
+## 数据
 
-## 对着别的栈跑探针
+- 题库、成绩、上传的媒体在插件数据目录的 `quizz/`、`results/`、`media/` 里。卸载时选择保留数据，
+  重装后题库和成绩都还在。
+- 成绩逐局存在 `results/`，主持界面里可以回看和删除。
 
-`probes`、`api`、`session` 按 `.wonton/.env` 的 `WONTON_BASE_DOMAIN` 拼核心地址，`up` 起的栈自己写这个键。插件装进别人的栈、或者对着已有环境排查时，把那套栈的基础域名写进 `.wonton/.env`，不要只按实例名猜地址：实例名只是资源名前缀，网关按 Host 认域名，拼错了会回“没有安装”。
+## 已知限制
 
-```bash
-WONTON_BASE_DOMAIN=wonton.localhost
-```
-
-## 核心镜像
-
-检查和冒烟默认用套件里的核心镜像（`ghcr.io/wontonapp/wonton-core:main`）；要固定别的核心镜像，在仓库 Settings → Variables 设 `WONTON_CORE_IMAGE`，手动触发“检查”时填的 `core-image` 输入优先。
-
-## 更新开发套件
-
-```bash
-scripts/dev.sh kit-update
-```
-
-在从模板新建的插件仓库中更新套件；本仓库是套件源头，执行时只提示并退出。版本、可选引用和自定义脚本约定见[开发指南](https://github.com/wontonapp/wonton-docs/blob/main/develop.md#更新开发套件)。
+- 主持界面给出的二维码和加入链接指向云吞网关的地址，**没有云吞账号的客人扫码后会被登录页挡住**。
+  家人用装了云吞 App 的手机加入没有问题；招待没有账号的客人要等底座支持“访客链接”。
+- Agent 现在不能往题库里写题（插件数据目录没有对 Agent 的写接口），出题在主持界面里做。
 
 ## 图标
 
-`icon.svg` 是本仓库原创线条图标，按本仓库 MIT 许可证分发，见 [NOTICE](NOTICE)。
+图标来自上游仓库的 `packages/web/public/icon.svg`。Razzia 名称和标志是上游项目的商标，
+来源、许可全文见 [NOTICE](NOTICE)。

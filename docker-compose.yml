@@ -1,78 +1,118 @@
-# 示例插件：nginx 显示一个网页，向登录的人问好。改成自己的应用见 https://github.com/wontonapp/wonton-docs/blob/main/develop.md#写插件。
+# Razzia：Kahoot 式抢答游戏，一人出题当主持，大家用手机加入房间抢答。
+# 上游官方镜像（MIT）：一个容器里 nginx 监听 3000（网页、/api、/ws），node 游戏服务只听容器内
+# 回环的 3001，由 nginx 转发——对外只有 3000 一个口，全部经核心网关进来，不用另开局域网端口。
 services:
-  web:
-    # 镜像按摘要固定（多架构镜像写清单列表的摘要），标签只给人看。
-    image: nginx:1.31.8-alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
+  razzia:
+    image: ralex91/razzia:4.0.2@sha256:e880097d232d42cba882391831ea4cad617f5a9c82947e2fc96595d0d9d5b11d
     environment:
-      # 网关代登录：SSI 回显的 Remote-User 只信核心带来的。官方镜像启动时对 templates 目录里的
-      # *.template 做 envsubst，把下面的地址换进 nginx 配置（见 web/default.conf.template）。
-      WONTON_CORE_ADDRESS: ${WONTON_CORE_ADDRESS}
-    # 包里的文件经 configs 交给容器（核心在启动前写进去），不能用卷挂载。
-    configs:
-      - source: site
-        target: /etc/nginx/templates/default.conf.template
-      - source: page
-        target: /usr/share/nginx/html/index.html
-      - source: tokens
-        target: /usr/share/nginx/html/tokens.css
+      # 主持界面的口令：核心生成，主人在插件详情页查看（x-wonton.secrets.manager_password）。
+      MANAGER_PASSWORD: ${WONTON_SECRET_MANAGER_PASSWORD}
+      # 会话令牌的签名密钥：固定下来，重启后主持和玩家的会话不失效（上游要求至少 32 字符）。
+      JWT_SECRET: ${WONTON_SECRET_JWT_SECRET}
+      TZ: ${TZ}
+    volumes:
+      # 题库（quizz/）、成绩（results/）、上传的媒体（media/）都在数据目录里，上游首次启动自动建。
+      - ${WONTON_APP_DATA}:/app/config
+    depends_on:
+      init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      # /api/health 的应答要经过容器里的 nginx 转到 node 服务：两个进程都得活着才算健康。
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
       start_period: 30s
-      start_interval: 1s
+      start_interval: 2s
+
+  # 一次性服务：首次启动前把预置的中文题库复制进数据目录，已存在就不覆盖（幂等；
+  # 核心每次重建容器都会重新运行它）。用同一个官方镜像（alpine，自带 sh）。
+  init:
+    image: ralex91/razzia:4.0.2@sha256:e880097d232d42cba882391831ea4cad617f5a9c82947e2fc96595d0d9d5b11d
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        mkdir -p /data/quizz &&
+        for f in /seed/*.json; do
+          test -e "/data/quizz/$${f##*/}" || cp "$$f" /data/quizz/;
+        done
+    volumes:
+      - ${WONTON_APP_DATA}:/data
+    configs:
+      - source: quiz_changshi
+        target: /seed/changshi.json
+      - source: quiz_chengyu
+        target: /seed/chengyu.json
+    network_mode: none
+    restart: "no"
 
 configs:
-  site:
-    file: web/default.conf.template
-  page:
-    file: web/index.html
-  tokens:
-    file: web/tokens.css
+  quiz_changshi:
+    file: quizzes/changshi.json
+  quiz_chengyu:
+    file: quizzes/chengyu.json
 
 x-wonton:
-  spec: "0.6"
-  # 换成你自己的：反向域名形式，装上以后不能改。
-  id: app.example.hello
-  version: 0.1.1
+  # setup 是 0.11 的字段、show_owner 是 0.8 的；未用 0.12 的 settings，声明 0.11。
+  spec: "0.11"
+  id: game.razzia.app
+  version: 0.1.0
   kind: app
-  title: { zh: 你好, en: Hello }
-  description: { zh: 向登录的人问好的示例网页, en: An example page that greets whoever is signed in }
+  title: { zh: 抢答游戏（Razzia）, en: Quiz Game (Razzia) }
+  description:
+    zh: 像 Kahoot 的家庭抢答：一人出题当主持，大家用手机加入房间抢答，看谁答得又快又对。
+    en: A Kahoot-style quiz for the household — one person hosts, everyone joins on their phone, the fastest right answer wins.
   icon: icon.svg
   notices: [NOTICE]
-  screenshots: [screenshots/home.png]
-  author: { name: Example }
-  homepage: https://nginx.org
-  # 应用（这里是 nginx）的许可证；插件包自己的许可证写在仓库的 LICENSE 里。
-  license: BSD-2-Clause
+  screenshots: [screenshots/join.png, screenshots/manager.png]
+  author: { name: geraldpeng6, url: https://github.com/geraldpeng6 }
+  homepage: https://github.com/Ralex91/Razzia
+  # 应用（Razzia）的许可证；插件包自己的许可证写在仓库的 LICENSE 里。
+  license: MIT
   tags:
-    zh: [工具]
-    en: [Tools]
+    zh: [游戏, 聚会]
+    en: [Games, Party]
   about:
     zh: |
-      一个示例网页：登录以后，页面会向你问好。新建插件时可以照着改。
+      家庭聚会、复习功课的抢答游戏：主持人放题，大家用手机加入房间，每题限时抢答，答对越快分越高，最后上排行榜和领奖台。
+
+      主持人打开插件网页，输入主持口令（口令在 App 的插件详情页里查看）就能选题开局，屏幕上会给出 6 位房间码和二维码；玩家打开这个插件，输入房间码和昵称就加入。自带两套中文题（家庭常识赛、成语大会），主持界面里也能自己出题、给题目配图片。
+
+      游戏界面跟着手机系统的语言走，上游还没有中文界面（有英、日、德、法、意、西、波兰、土耳其、越南语），显示的是英文；自己出的题、预置的中文题都不受影响。
     en: |
-      An example page: once you are signed in, the page says hello. Copy it as a starting point for a new plugin.
-  release_notes: { zh: 名字和说明更新。, en: Product name and description update. }
+      A quiz party game for families and study groups: the host puts questions on screen, everyone joins from their phone, each question is timed, faster correct answers score more, and the game ends with a leaderboard and podium.
+
+      The host opens the plugin page and unlocks the manager screen with the manager password (view it on the plugin's detail page in the app), picks a quiz or writes one, and starts — the screen shows a 6-digit room code and a QR code. Players open this plugin, type the code and a nickname, and play. Two Chinese quizzes ship preloaded (general knowledge and idioms), and you can write your own with pictures in the manager screen.
+
+      The interface follows the phone's system language; upstream has no Chinese yet (English, Japanese, German, French, Italian, Spanish, Polish, Turkish and Vietnamese), so it falls back to English. Quiz content is unaffected.
+  release_notes:
+    zh: 首个版本：预置两套中文示例题（家庭常识赛、成语大会）。
+    en: "First release: two Chinese starter quizzes (general knowledge and idioms) ship preloaded."
+  setup:
+    zh: 主持前在 App 的插件详情页点开“主持口令”查看口令，主持时输入它。
+    en: Before hosting, open “Manager password” on the plugin's detail page in the app and enter it on the manager screen.
   webui:
-    service: web
-    port: 80
-    # 示例页回显网关注入的用户名，见 https://github.com/wontonapp/wonton-docs/blob/main/plugin-spec.md#网关代登录sso-proxy。
-    sso: proxy
-    proxy:
-      headers:
-        Remote-User: "{user}"
-  # 能放进侧边栏“我的应用”的页面，见 https://github.com/wontonapp/wonton-docs/blob/main/plugin-spec.md#应用页面tabs。放不放由用户决定。
+    service: razzia
+    port: 3000
+    # 主持靠口令，玩家不用账号：游戏在核心网关后面，只有登录了云吞的家人打得开。
+    sso: none
+  # 侧边栏直达抢答房间：平时用它加入或主持。
   tabs:
-    - id: home
-      title: { zh: 主页, en: Home }
-      icon: tabs/home.svg
-      icon_selected: tabs/home-fill.svg
+    - id: play
+      title: { zh: 抢答, en: Play }
+      icon: tabs/play.svg
+      icon_selected: tabs/play-fill.svg
       path: /
-      # 这个页面没做适配，用默认的 inset：从状态栏下沿开始，页面不用管安全区。
-      # 想让内容从状态栏后面滚过，写 layout: edge-to-edge，并用 --wonton-inset-* 留出系统安全区的位置。
   permissions: []
-  # 上游 nginx 官方镜像，amd64 和 arm64 都有；上游没写最低内存，按本机空闲实测取整（实测约 24M，取 64M）。
+  # 上游没写最低内存；空闲实测约 64M，取 128M。镜像 amd64 和 arm64 都有（Docker Hub 清单列表）。
   requirements:
     arch: [amd64, arm64]
-    memory: 64M
+    memory: 128M
+  secrets:
+    # 主持口令：核心生成随机值，主人随时能在插件详情页查看（主持必须用它解锁）。
+    manager_password:
+      generate: { bytes: 24 }
+      show_owner: { label: { zh: 主持口令, en: Manager password } }
+    # 会话签名密钥：核心生成 64 位十六进制，满足上游 ≥32 字符的要求；不设的话上游每次重启换新，会话全失效。
+    jwt_secret:
+      generate: { bytes: 32 }
