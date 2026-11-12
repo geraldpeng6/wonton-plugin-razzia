@@ -4,8 +4,8 @@
 
 web_assert() { grep -q '<title>Razzia</title>'; }   # 应用页面（SPA 的 index.html）标题
 
-_razzia_container() { # 本实例里 razzia 服务的容器：按核心打的标签找，插件自带 smoke 和 e2e 套件都成立
-  local inst="${SMOKE_INSTANCE:-}" args=(--filter "label=wonton.plugin=$SMOKE_PLUGIN_ID" --filter "label=wonton.service=razzia")
+_razzia_container() { # 本实例里 razzia 服务的容器：按核心打的标签找（id 写死：钩子契约不保证 SMOKE_PLUGIN_ID 已导出）
+  local inst="${SMOKE_INSTANCE:-}" args=(--filter "label=wonton.plugin=game.razzia.app" --filter "label=wonton.service=razzia")
   if [[ -z "$inst" && -n "${SMOKE_BASE:-}" ]]; then
     inst="${SMOKE_BASE#http://}"; inst="${inst%%.*}"
   fi
