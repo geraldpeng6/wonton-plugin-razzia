@@ -1,0 +1,102 @@
+{
+  "gameMode": "quiz",
+  "subject": "家庭常识赛",
+  "questions": [
+    {
+      "question": "彩虹一般有几种颜色？",
+      "category": "常识",
+      "answers": ["5 种", "6 种", "7 种", "9 种"],
+      "solutions": [2],
+      "note": "红、橙、黄、绿、蓝、靛、紫，一共 7 种。",
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "type": "multi",
+      "question": "下面哪些是中国的传统节日？",
+      "category": "常识",
+      "answers": ["春节", "圣诞节", "中秋节", "万圣节"],
+      "solutions": [0, 2],
+      "note": "春节和中秋节是传统节日，圣诞节和万圣节来自国外。",
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "蜜蜂酿蜜，主要采的是花的什么？",
+      "category": "常识",
+      "answers": ["花粉", "花蜜", "花瓣", "花萼"],
+      "solutions": [1],
+      "note": "蜜蜂把花蜜带回蜂巢加工，酿成蜂蜜。",
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "type": "estimation",
+      "question": "平年一年有多少天？",
+      "category": "常识",
+      "answers": [],
+      "solutions": [365],
+      "options": { "inputMode": "slider", "min": 350, "max": 380, "step": 1, "margin": 2 },
+      "note": "平年 365 天，闰年 366 天。",
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "大熊猫最爱吃什么？",
+      "category": "动物",
+      "answers": ["竹子", "肉", "鱼", "水果"],
+      "solutions": [0],
+      "note": "大熊猫 99% 的食物都是竹子。",
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "type": "multi",
+      "question": "下面哪些动物会自己飞（不算滑翔）？",
+      "category": "动物",
+      "answers": ["蝙蝠", "鼯鼠", "企鹅", "蝴蝶"],
+      "solutions": [0, 3],
+      "note": "鼯鼠只会滑翔，企鹅不会飞；蝙蝠是唯一真正会飞的哺乳动物。",
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "type": "estimation",
+      "question": "一只成年猫有多少颗牙齿？",
+      "category": "动物",
+      "answers": [],
+      "solutions": [30],
+      "options": { "inputMode": "slider", "min": 16, "max": 44, "step": 1, "margin": 2 },
+      "note": "成年猫一般有 30 颗牙，比人还少 2 颗。",
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "“守株待兔”里的农夫在等什么？",
+      "category": "成语",
+      "answers": ["兔子再来撞树", "兔子帮他种田", "猎人分他兔肉", "兔子被别人抓走"],
+      "solutions": [0],
+      "note": "这个成语讽刺指望不劳而获、死守老经验的人。",
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "“画蛇添足”是什么意思？",
+      "category": "成语",
+      "answers": ["画技高超", "多此一举反而坏事", "锦上添花", "专心致志"],
+      "solutions": [1],
+      "note": "蛇本来没有脚，画上脚反而输了：比喻做多余的事反而不妙。",
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "“一石二鸟”是什么意思？",
+      "category": "成语",
+      "answers": ["力气很大", "做一件事达到两个目的", "打猎收获多", "两件事一起失败"],
+      "solutions": [1],
+      "note": "跟“一举两得”意思差不多。",
+      "cooldown": 5,
+      "time": 15
+    }
+  ]
+}
